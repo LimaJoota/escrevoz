@@ -8,6 +8,7 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize};
+use tauri_plugin_clipboard_manager::ClipboardExt;
 
 #[cfg(not(target_os = "macos"))]
 use log::debug;
@@ -89,12 +90,12 @@ fn overlay_dimensions(state: &str) -> (f64, f64) {
     }
 }
 
-// Recovery card: up to RECOVERY_LIST_LEN two-line rows over the base row.
-const OVERLAY_RECOVERY_WIDTH: f64 = 400.0;
-const OVERLAY_RECOVERY_HEIGHT: f64 = 320.0;
+// Recovery card: a title and up to RECOVERY_LIST_LEN one-line rows, menu-sized.
+const OVERLAY_RECOVERY_WIDTH: f64 = 340.0;
+const OVERLAY_RECOVERY_HEIGHT: f64 = 110.0;
 
 /// How many transcripts the recovery card lists.
-const RECOVERY_LIST_LEN: usize = 5;
+const RECOVERY_LIST_LEN: usize = 3;
 
 /// Transcripts on the recovery card, newest first, until one is copied or the
 /// card is dismissed. Held here, not in the webview, so Copy writes exactly
@@ -103,14 +104,17 @@ static RECOVERY_TEXTS: Mutex<Vec<String>> = Mutex::new(Vec::new());
 
 #[derive(Clone, serde::Serialize)]
 struct RecoveryPayload {
-    texts: Vec<String>,
+    /// `HH:MM  first words…`, as in the Cmd+Shift+V menu.
+    labels: Vec<String>,
     /// The first text is a paste that didn't land (vs. opened on demand).
     lost: bool,
 }
 
-/// Shows the last few transcripts in the overlay; clicking one pastes it.
+/// Shows the last few transcripts in the overlay; clicking one copies it.
 /// `lost` is a paste that may not have landed and goes first; the rest come
-/// from History. Nothing is pasted or copied until the user clicks. Skipped while a new
+/// from History. A failed paste means no text field had focus, so a click
+/// copies for the user to paste where they want; nothing is copied before
+/// it, leaving their clipboard alone. Skipped while a new
 /// recording owns the overlay; everything is in History either way.
 pub fn show_paste_recovery(app_handle: &AppHandle, lost: Option<&str>) {
     if app_handle
@@ -121,9 +125,9 @@ pub fn show_paste_recovery(app_handle: &AppHandle, lost: Option<&str>) {
         return;
     }
 
-    let mut texts: Vec<String> = lost
+    let mut texts: Vec<(String, i64)> = lost
         .filter(|text| !text.trim().is_empty())
-        .map(str::to_string)
+        .map(|text| (text.to_string(), chrono::Utc::now().timestamp()))
         .into_iter()
         .collect();
     match app_handle
@@ -133,8 +137,8 @@ pub fn show_paste_recovery(app_handle: &AppHandle, lost: Option<&str>) {
         Ok(entries) => {
             for entry in &entries {
                 let text = crate::tray::last_transcript_text(entry);
-                if texts.len() < RECOVERY_LIST_LEN && !texts.iter().any(|t| t == text) {
-                    texts.push(text.to_string());
+                if texts.len() < RECOVERY_LIST_LEN && !texts.iter().any(|(t, _)| t == text) {
+                    texts.push((text.to_string(), entry.timestamp));
                 }
             }
         }
@@ -145,26 +149,42 @@ pub fn show_paste_recovery(app_handle: &AppHandle, lost: Option<&str>) {
     }
 
     if let Ok(mut slot) = RECOVERY_TEXTS.lock() {
-        *slot = texts.clone();
+        *slot = texts.iter().map(|(text, _)| text.clone()).collect();
     }
     if let Some(overlay_window) = app_handle.get_webview_window("recording_overlay") {
         // Sent before the state so the card never renders empty.
         let payload = RecoveryPayload {
-            texts,
+            labels: texts
+                .iter()
+                .map(|(text, at)| crate::tray::menu_label(text, *at))
+                .collect(),
             lost: lost.is_some(),
         };
         let _ = overlay_window.emit("paste-recovery-texts", payload);
     }
     show_overlay_state(app_handle, "recovery");
+    // The card never takes focus, so Esc closes it through the global cancel
+    // shortcut while it is up.
+    crate::shortcut::register_cancel_shortcut(app_handle);
 }
 
-/// Pastes the recovery card's `index`th transcript (the user clicked its row)
-/// into the app in front and closes the card. The card never takes focus, so
-/// the paste lands where the user is working, with the same paste method and
-/// clipboard handling as a dictation.
+/// Whether the recovery card is up (its texts clear when it closes).
+pub fn is_paste_recovery_shown() -> bool {
+    RECOVERY_TEXTS.lock().is_ok_and(|texts| !texts.is_empty())
+}
+
+/// Drops the Esc the recovery card borrowed, unless a recording now owns it.
+fn release_recovery_cancel(app: &AppHandle) {
+    if !app.state::<Arc<AudioRecordingManager>>().is_recording() {
+        crate::shortcut::unregister_cancel_shortcut(app);
+    }
+}
+
+/// Copies the recovery card's `index`th transcript (the user clicked its row)
+/// and closes the card.
 #[tauri::command]
 #[specta::specta]
-pub fn paste_recovery_text(app: AppHandle, index: u32) -> Result<(), String> {
+pub fn copy_recovery_text(app: AppHandle, index: u32) -> Result<(), String> {
     let text = RECOVERY_TEXTS
         .lock()
         .ok()
@@ -174,37 +194,22 @@ pub fn paste_recovery_text(app: AppHandle, index: u32) -> Result<(), String> {
             text
         })
         .ok_or("No transcript to recover")?;
+    app.clipboard()
+        .write_text(text)
+        .map_err(|e| format!("Failed to copy transcript: {e}"))?;
+    release_recovery_cancel(&app);
     hide_recording_overlay(&app);
-    std::thread::spawn(move || {
-        // Lets the click finish before the paste keys go out.
-        std::thread::sleep(RECOVERY_PASTE_SETTLE);
-        match crate::utils::paste(text, app.clone()) {
-            Ok(()) => crate::notices::clear(&app, crate::notices::NoticeSource::Dictation),
-            Err(e) => {
-                log::error!("Failed to paste a recovered transcript: {e}");
-                crate::notices::raise(
-                    &app,
-                    Notice::new(
-                        crate::notices::NoticeCode::PasteFailed,
-                        crate::notices::NoticeSource::Dictation,
-                    ),
-                );
-            }
-        }
-    });
     Ok(())
 }
 
-/// Pause between the click on a recovery row and its paste.
-const RECOVERY_PASTE_SETTLE: Duration = Duration::from_millis(120);
-
-/// Closes the recovery card (its close button or timeout) without copying.
+/// Closes the recovery card (its close button, Esc or timeout) without copying.
 #[tauri::command]
 #[specta::specta]
 pub fn dismiss_paste_recovery(app: AppHandle) {
     if let Ok(mut texts) = RECOVERY_TEXTS.lock() {
         texts.clear();
     }
+    release_recovery_cancel(&app);
     // A recording that started meanwhile owns the overlay now.
     if !app.state::<Arc<AudioRecordingManager>>().is_recording() {
         hide_recording_overlay(&app);
@@ -423,6 +428,22 @@ fn calculate_overlay_position(
         }
     };
 
+    Some((x, y))
+}
+
+/// Just below and right of the pointer, like a menu, kept inside the work area.
+#[cfg(not(target_os = "windows"))]
+fn position_at_pointer(app_handle: &AppHandle, width: f64, height: f64) -> Option<(f64, f64)> {
+    let (cursor_x, cursor_y) = input::get_cursor_position(app_handle)?;
+    let monitor = get_monitor_with_cursor(app_handle)?;
+    let scale = monitor.scale_factor();
+    let area = monitor.work_area();
+    let left = area.position.x as f64 / scale;
+    let top = area.position.y as f64 / scale;
+    let right = left + area.size.width as f64 / scale;
+    let bottom = top + area.size.height as f64 / scale;
+    let x = (cursor_x as f64 + 4.0).min(right - width).max(left);
+    let y = (cursor_y as f64 + 4.0).min(bottom - height).max(top);
     Some((x, y))
 }
 
@@ -694,15 +715,20 @@ fn show_overlay_state_on_main(app_handle: &AppHandle, state: &str) {
 
             let pos_started = std::time::Instant::now();
             #[cfg(not(target_os = "windows"))]
-            let set_pos_elapsed =
-                if let Some((x, y)) = calculate_overlay_position(app_handle, width, height) {
-                    let set_pos_started = std::time::Instant::now();
-                    let _ = overlay_window
-                        .set_position(tauri::Position::Logical(tauri::LogicalPosition { x, y }));
-                    set_pos_started.elapsed()
-                } else {
-                    std::time::Duration::ZERO
-                };
+            let position = if state == "recovery" {
+                position_at_pointer(app_handle, width, height)
+            } else {
+                calculate_overlay_position(app_handle, width, height)
+            };
+            #[cfg(not(target_os = "windows"))]
+            let set_pos_elapsed = if let Some((x, y)) = position {
+                let set_pos_started = std::time::Instant::now();
+                let _ = overlay_window
+                    .set_position(tauri::Position::Logical(tauri::LogicalPosition { x, y }));
+                set_pos_started.elapsed()
+            } else {
+                std::time::Duration::ZERO
+            };
             #[cfg(target_os = "windows")]
             let set_pos_elapsed = {
                 let set_pos_started = std::time::Instant::now();

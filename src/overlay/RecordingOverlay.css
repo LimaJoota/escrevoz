@@ -458,107 +458,66 @@
   text-overflow: ellipsis;
 }
 
-/* Paste recovery: recent transcripts, newest first, each two lines at most.
-   A title row with the close button sits on top; clicking anywhere on a row
-   copies it, and its Copy pill fills in as the pointer reaches the row. */
+/* Paste recovery: styled like the Cmd+Shift+V menu (a native NSMenu), so the
+   two read as one thing. A gray title row, then one-line `HH:MM  text…` rows
+   that take the system accent under the pointer; a click copies. */
 .ov-stage .scard.srecover {
-  /* Title row on top in either placement (the top stage reverses cards). */
+  /* Title row on top (the top stage reverses cards). */
   flex-direction: column;
-  border-radius: 18px;
-  /* Stronger than the pills' hairline so the card reads over any window. */
-  border-color: color-mix(in srgb, var(--color-text) 22%, transparent);
+  width: calc(100vw - 2px);
+  box-sizing: border-box;
+  padding: 5px;
+  border-radius: 12px;
+  border-color: color-mix(in srgb, var(--color-text) 18%, transparent);
+  transform-origin: top left;
+  font-family: -apple-system, BlinkMacSystemFont, var(--s-font);
 }
 .srecover-head {
-  height: var(--ov-base-h);
+  height: 24px;
   flex: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 0 10px 0 16px;
-  border-bottom: 1px solid var(--s-border);
+  gap: 8px;
+  padding: 0 2px 0 10px;
 }
 .srecover-title {
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
+  font-size: 13px;
   color: var(--s-muted);
 }
-.srecover-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 6px;
-  max-height: calc(100vh - var(--ov-base-h) - 20px);
-  overflow-y: auto;
-  scrollbar-width: none;
-}
-.srecover-list::-webkit-scrollbar {
-  display: none;
+.srecover-hint {
+  margin-inline-start: 6px;
+  opacity: 0.7;
 }
 .srecover-row {
   -webkit-appearance: none;
   appearance: none;
+  flex: none;
   width: 100%;
-  box-sizing: border-box;
+  height: 24px;
   margin: 0;
+  padding: 0 10px;
   border: 0;
+  border-radius: 7px;
   background: transparent;
   font: inherit;
-  text-align: start;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 9px 8px 9px 12px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: background-color 150ms ease;
-}
-.srecover-row:hover {
-  background: var(--s-hair);
-}
-.srecover-row:active {
-  background: var(--s-accent-soft);
-}
-.srecover-row:focus-visible {
-  outline: 2px solid var(--color-background-ui);
-  outline-offset: -2px;
-}
-.srecover-text {
-  flex: 1;
-  min-width: 0;
   font-size: 13px;
-  line-height: 1.4;
+  text-align: start;
   color: var(--color-text);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  /* pre keeps the two spaces after the time, as in the menu. */
+  white-space: pre;
   overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
 }
-.scopy {
-  flex: none;
-  height: 24px;
-  padding: 0 11px;
-  display: inline-flex;
-  align-items: center;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text);
-  background: var(--s-hair);
-  transition:
-    background-color 150ms ease,
-    color 150ms ease,
-    transform 100ms ease;
-}
-.srecover-row:hover .scopy {
+.srecover-row:hover,
+.srecover-row:focus-visible {
+  outline: none;
   color: #fff;
-  background: var(--color-background-ui);
-}
-.srecover-row:active .scopy {
-  transform: scale(0.96);
+  background: #0a84ff;
+  background: -apple-system-control-accent;
 }

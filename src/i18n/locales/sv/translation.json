@@ -1027,7 +1027,7 @@
     "loadingModel": "Laddar modell...",
     "recovery": {
       "title": "Klistrades inte in?",
-      "paste": "Klistra in",
+      "hint": "Klicka för att kopiera",
       "close": "Stäng"
     }
   },

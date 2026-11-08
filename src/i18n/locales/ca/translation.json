@@ -1027,7 +1027,7 @@
     "loadingModel": "S'està carregant el model...",
     "recovery": {
       "title": "No s'ha enganxat?",
-      "paste": "Enganxa",
+      "hint": "Fes clic per copiar",
       "close": "Tanca"
     }
   },

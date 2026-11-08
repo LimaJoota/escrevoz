@@ -1027,7 +1027,7 @@
     "loadingModel": "Načítání modelu...",
     "recovery": {
       "title": "Nevložilo se?",
-      "paste": "Vložit",
+      "hint": "Kliknutím zkopírujete",
       "close": "Zavřít"
     }
   },

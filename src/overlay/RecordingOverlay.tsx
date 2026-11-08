@@ -41,7 +41,7 @@ const SLOW_MODEL_LOAD_MS = 2000;
 // How long the paste-recovery card stays up; resting the pointer on it holds it.
 const RECOVERY_VISIBLE_MS = 10000;
 
-type RecoveryPayload = { texts: string[]; lost: boolean };
+type RecoveryPayload = { labels: string[]; lost: boolean };
 
 // Matches the delay in `hide_recording_overlay`, so a notice can fade out.
 const OVERLAY_FADE_MS = 300;
@@ -88,7 +88,7 @@ const RecordingOverlay: React.FC = () => {
   // Recent transcripts offered back (see show_paste_recovery); `lost` means
   // the first one is a paste that didn't land.
   const [recovery, setRecovery] = useState<RecoveryPayload>({
-    texts: [],
+    labels: [],
     lost: false,
   });
   const [recoveryHeld, setRecoveryHeld] = useState(false);
@@ -382,11 +382,12 @@ const RecordingOverlay: React.FC = () => {
     ? () => commands.dismissOverlayNotice()
     : undefined;
 
-  // ---- Paste recovery: the transcripts that may not have landed. A click
-  // anywhere on a row pastes it into the app in front.
+  // ---- Paste recovery: the transcripts that may not have landed, styled like
+  // the Cmd+Shift+V menu. A click on a row copies it.
   if (state === "recovery") {
     return (
-      <div dir={direction} className={`ov-stage ${position}`}>
+      // The window sits at the pointer, so the card hangs from its top edge.
+      <div dir={direction} className="ov-stage top">
         <div
           className="scard open srecover"
           onMouseEnter={() => setRecoveryHeld(true)}
@@ -397,6 +398,9 @@ const RecordingOverlay: React.FC = () => {
               {recovery.lost
                 ? t("overlay.recovery.title")
                 : t("tray.recentTranscripts")}
+              <span className="srecover-hint">
+                {t("overlay.recovery.hint")}
+              </span>
             </span>
             <button
               className="sx"
@@ -413,19 +417,16 @@ const RecordingOverlay: React.FC = () => {
               </svg>
             </button>
           </div>
-          <div className="srecover-list">
-            {recovery.texts.map((text, index) => (
-              <button
-                type="button"
-                className="srecover-row"
-                key={index}
-                onClick={() => commands.pasteRecoveryText(index)}
-              >
-                <span className="srecover-text">{text}</span>
-                <span className="scopy">{t("overlay.recovery.paste")}</span>
-              </button>
-            ))}
-          </div>
+          {recovery.labels.map((label, index) => (
+            <button
+              type="button"
+              className="srecover-row"
+              key={index}
+              onClick={() => commands.copyRecoveryText(index)}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
     );

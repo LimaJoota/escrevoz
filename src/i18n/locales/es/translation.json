@@ -1027,7 +1027,7 @@
     "loadingModel": "Cargando modelo...",
     "recovery": {
       "title": "¿No se pegó?",
-      "paste": "Pegar",
+      "hint": "Haz clic para copiar",
       "close": "Cerrar"
     }
   },

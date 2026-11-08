@@ -58,11 +58,13 @@ pub fn handle_shortcut_event(
         return;
     };
 
-    // Cancel binding: only fires when recording and key is pressed
+    // Cancel binding: cancels a recording, or else closes the paste-recovery card
     if binding_id == "cancel" {
         let audio_manager = app.state::<Arc<AudioRecordingManager>>();
         if audio_manager.is_recording() && is_pressed {
             action.start(app, binding_id, hotkey_string);
+        } else if is_pressed && crate::overlay::is_paste_recovery_shown() {
+            crate::overlay::dismiss_paste_recovery(app.clone());
         }
         return;
     }
