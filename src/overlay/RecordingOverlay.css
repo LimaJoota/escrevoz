@@ -514,7 +514,7 @@
   text-overflow: ellipsis;
   cursor: default;
 }
-.srecover-row:hover,
+.srecover-row.hover,
 .srecover-row:focus-visible {
   outline: none;
   color: #fff;

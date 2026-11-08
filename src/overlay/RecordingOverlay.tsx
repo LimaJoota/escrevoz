@@ -92,6 +92,7 @@ const RecordingOverlay: React.FC = () => {
     lost: false,
   });
   const [recoveryHeld, setRecoveryHeld] = useState(false);
+  const [hoverRow, setHoverRow] = useState(-1);
   const [notice, setNotice] = useState<Notice | null>(null);
   const [noticeWidth, setNoticeWidth] = useState<number>();
   const noticeProbeRef = useRef<HTMLSpanElement>(null);
@@ -272,6 +273,23 @@ const RecordingOverlay: React.FC = () => {
     return () => clearTimeout(id);
   }, [state, isVisible, recoveryHeld, recovery]);
 
+  // The card never takes focus, so mouse events never reach it; the backend
+  // sends the pointer (window points) instead.
+  useEffect(() => {
+    if (state !== "recovery" || !isVisible) return;
+    const unlisten = listen<[number, number]>("recovery-pointer", (event) => {
+      const hit = document.elementFromPoint(...event.payload);
+      const row = hit?.closest<HTMLElement>(".srecover-row");
+      setRecoveryHeld(!!hit?.closest(".srecover"));
+      setHoverRow(row ? Number(row.dataset.index) : -1);
+    });
+    return () => {
+      unlisten.then((stop) => stop());
+      setRecoveryHeld(false);
+      setHoverRow(-1);
+    };
+  }, [state, isVisible]);
+
   // Each fresh streaming session starts pinned to the bottom, fade cleared.
   useEffect(() => {
     pinnedRef.current = true;
@@ -388,11 +406,7 @@ const RecordingOverlay: React.FC = () => {
     return (
       // The window sits at the pointer, so the card hangs from its top edge.
       <div dir={direction} className="ov-stage top">
-        <div
-          className="scard open srecover"
-          onMouseEnter={() => setRecoveryHeld(true)}
-          onMouseLeave={() => setRecoveryHeld(false)}
-        >
+        <div className="scard open srecover">
           <div className="srecover-head">
             <span className="srecover-title">
               {recovery.lost
@@ -420,7 +434,10 @@ const RecordingOverlay: React.FC = () => {
           {recovery.labels.map((label, index) => (
             <button
               type="button"
-              className="srecover-row"
+              className={
+                index === hoverRow ? "srecover-row hover" : "srecover-row"
+              }
+              data-index={index}
               key={index}
               onClick={() => commands.copyRecoveryText(index)}
             >

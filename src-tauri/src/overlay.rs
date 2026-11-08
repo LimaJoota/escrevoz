@@ -166,7 +166,31 @@ pub fn show_paste_recovery(app_handle: &AppHandle, lost: Option<&str>) {
     // The card never takes focus, so Esc closes it through the global cancel
     // shortcut while it is up.
     crate::shortcut::register_cancel_shortcut(app_handle);
+    // Nor does WebKit get mouse moves, so send it the pointer (window points)
+    // while the card is up; a newer card's loop replaces this one.
+    let generation = RECOVERY_POINTER_GEN.fetch_add(1, Ordering::SeqCst) + 1;
+    let app = app_handle.clone();
+    std::thread::spawn(move || {
+        while is_paste_recovery_shown() && RECOVERY_POINTER_GEN.load(Ordering::SeqCst) == generation
+        {
+            if let (Some((x, y)), Some(window)) = (
+                input::get_cursor_position(&app),
+                app.get_webview_window("recording_overlay"),
+            ) {
+                if let (Ok(origin), Ok(scale)) = (window.outer_position(), window.scale_factor()) {
+                    let point = (
+                        x as f64 - origin.x as f64 / scale,
+                        y as f64 - origin.y as f64 / scale,
+                    );
+                    let _ = window.emit("recovery-pointer", point);
+                }
+            }
+            std::thread::sleep(Duration::from_millis(40));
+        }
+    });
 }
+
+static RECOVERY_POINTER_GEN: AtomicU64 = AtomicU64::new(0);
 
 /// Whether the recovery card is up (its texts clear when it closes).
 pub fn is_paste_recovery_shown() -> bool {
