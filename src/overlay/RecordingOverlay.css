@@ -356,7 +356,8 @@
   gap: 10px;
   justify-self: end;
 }
-/* The quote's dots sit on the wave's midline. */
+/* As in the logo: the quote's top meets the cursor's top, and its dots sit on
+   the wave's midline. */
 .squote {
   width: 15px;
   height: 12px;
@@ -387,8 +388,8 @@
 .swave {
   display: flex;
   align-items: center;
-  /* 24 bars of 2px + 2px gap, centered. */
-  justify-content: center;
+  /* 24 bars of 2px + 2px gap, then the 3px cursor at the right. */
+  position: relative;
   width: 99px;
   overflow: hidden;
   margin-right: 8px;
@@ -419,6 +420,26 @@
   background: var(--s-muted);
   opacity: 0.35;
   animation: swave-arming 900ms ease-in-out infinite;
+}
+/* The Escrevoz cursor ends the line and stays put: solid while the voice types,
+   blinking in the pauses like a text caret. */
+.scursor {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 3px;
+  height: 18px;
+  border-radius: 1px;
+  background: var(--s-accent);
+  animation: scaret-blink 1.05s steps(1) infinite;
+}
+.scursor.typing {
+  animation: none;
+}
+.swave.arming .scursor {
+  background: var(--s-muted);
+  opacity: 0.35;
+  animation: none;
 }
 .swave.arming i:nth-child(2),
 .swave.arming i:nth-child(8) {

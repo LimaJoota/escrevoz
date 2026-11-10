@@ -375,6 +375,9 @@ const RecordingOverlay: React.FC = () => {
           <i key={i} style={{ height: `${2 + Math.pow(v, 0.8) * 16}px` }} />
         ))}
       </div>
+      <span
+        className={`scursor ${bars.some((v) => v > 0.12) ? "typing" : ""}`}
+      />
     </div>
   );
 
