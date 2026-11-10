@@ -22,6 +22,10 @@ Com vírgula, ponto e acento. Nenhum áudio sai do seu Mac.
 [![macOS](https://img.shields.io/badge/macOS-Apple_Silicon-3A3F45?labelColor=15171A&logo=apple&logoColor=white)](#instalar)
 [![Licença MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-3A3F45?labelColor=15171A)](LICENSE)
 
+<br>
+
+<img src="docs/marca/escrevoz-demo.gif" width="800" alt="O Escrevoz em ação: ditado com pontuação, cartão Não colou?, últimos ditados, troca de palavras e histórico do clipboard">
+
 </div>
 
 ## Instalar
