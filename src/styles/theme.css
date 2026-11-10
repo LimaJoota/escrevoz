@@ -9,14 +9,14 @@
   /* Palette source of truth. Each themed color is defined once as a
      light/dark pair; the active tokens below and the `data-theme` overrides
      in App.css reference these, so a hex value lives in exactly one place. */
-  --light-color-text: #0f0f0f;
-  --light-color-background: #fbfbfb;
-  --light-color-logo-primary: #faa2ca;
-  --light-color-logo-stroke: #382731;
+  --light-color-text: #15171a;
+  --light-color-background: #f7f7f8;
+  --light-color-logo-primary: #ff5a1f;
+  --light-color-logo-stroke: #15171a;
 
-  --dark-color-text: #fbfbfb;
-  --dark-color-background: #2c2b29;
-  --dark-color-logo-primary: #f28cbb;
+  --dark-color-text: #f4f4f5;
+  --dark-color-background: #17191c;
+  --dark-color-logo-primary: #ff6a33;
 
   /* Status colors. Each has a -wash tint below. */
   --light-color-warning: #d97706;
@@ -47,32 +47,11 @@
   --dark-color-demo-alu-hi: #5a585d;
   --light-color-demo-alu-lo: #cdccd1;
   --dark-color-demo-alu-lo: #3b3a3e;
-  --light-demo-wallpaper:
-    radial-gradient(
-      110% 80% at 90% 105%,
-      color-mix(in srgb, var(--light-color-logo-primary) 50%, #fbfbfb) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      90% 80% at 5% -5%,
-      color-mix(in srgb, #c7b9ef 55%, #fbfbfb) 0%,
-      transparent 62%
-    ),
-    color-mix(in srgb, #e9e1f3 60%, #fbfbfb);
-  --dark-demo-wallpaper:
-    radial-gradient(
-      110% 80% at 90% 105%,
-      color-mix(in srgb, var(--dark-color-logo-primary) 26%, #1b1719) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      90% 80% at 5% -5%,
-      color-mix(in srgb, #7c68c0 38%, #1b1719) 0%,
-      transparent 62%
-    ),
-    #1f1a1e;
+  /* The demo desk: a plain surface, so the drawn app is what you look at. */
+  --light-demo-wallpaper: #e7e7e4;
+  --dark-demo-wallpaper: #24272b;
 
-  /* The wordmark. Dark mode outlines it in white to cut down on pinks. */
+  /* The wordmark. Dark mode outlines it in white. */
   --light-color-wordmark: var(--light-color-logo-primary);
   --light-color-wordmark-stroke: var(--light-color-logo-stroke);
   --dark-color-wordmark: var(--dark-color-logo-primary);
@@ -124,7 +103,7 @@
   );
 
   /* Tokens that do not change between light and dark */
-  --color-background-ui: #da5893;
+  --color-background-ui: #ff5a1f;
   --color-mid-gray: #808080;
 
   /* Active palette — defaults to light, follows the OS via the media query

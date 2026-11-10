@@ -71,6 +71,8 @@
   --ease-glide: cubic-bezier(0.22, 1, 0.36, 1);
 
   /* The mascot waves once on arrival (it rests tilted -8deg) */
+  /* The mascot cursor blinks like a text caret */
+  --animate-caret: caret 1.05s steps(1) infinite;
   --animate-wave: wave 1100ms var(--ease-glide) 250ms both;
   /* A high five: lunge, squash, settle; the burst over it */
   --animate-slap: slap 420ms var(--ease-glide);
@@ -102,6 +104,11 @@
     }
     100% {
       rotate: -8deg;
+    }
+  }
+  @keyframes caret {
+    50% {
+      opacity: 0;
     }
   }
   @keyframes slap {
