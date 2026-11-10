@@ -933,6 +933,11 @@
           "title": "ggml",
           "description": "Wydajne wykonywanie modelu rozpoznawania mowy Whisper od OpenAI",
           "details": "Escrevoz używa ggml do szybkiego, lokalnego przetwarzania mowy na tekst. Dzięki niesamowitej pracy Georgi Gerganova i współtwórców."
+        },
+        "handy": {
+          "title": "Handy",
+          "description": "Escrevoz powstał na bazie Handy, aplikacji open source autorstwa CJ Pais.",
+          "details": "MIT License · Copyright (c) 2025 CJ Pais"
         }
       }
     }

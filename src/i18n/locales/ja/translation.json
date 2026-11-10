@@ -933,6 +933,11 @@
           "title": "ggml",
           "description": "オンデバイス機械学習推論のための高性能テンソルライブラリ",
           "details": "Escrevoz のローカルの音声からテキストへの文字起こしは transcribe.cpp と ggml を基盤としています。Georgi Gerganov 氏と貢献者の皆様の素晴らしい仕事に感謝します。"
+        },
+        "handy": {
+          "title": "Handy",
+          "description": "Escrevoz は、CJ Pais によるオープンソースアプリ Handy をもとに作られています。",
+          "details": "MIT License · Copyright (c) 2025 CJ Pais"
         }
       }
     }

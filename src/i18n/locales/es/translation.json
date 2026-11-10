@@ -933,6 +933,11 @@
           "title": "ggml",
           "description": "Biblioteca de tensores de alto rendimiento para inferencia de aprendizaje automático en el dispositivo",
           "details": "El habla a texto local de Escrevoz está construido sobre transcribe.cpp y ggml. Gracias al increíble trabajo de Georgi Gerganov y colaboradores."
+        },
+        "handy": {
+          "title": "Handy",
+          "description": "Escrevoz se basa en Handy, una aplicación de código abierto de CJ Pais.",
+          "details": "MIT License · Copyright (c) 2025 CJ Pais"
         }
       }
     }

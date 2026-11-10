@@ -933,6 +933,11 @@
           "title": "ggml",
           "description": "Високопроизводително изпълнение на автоматичния модел за разпознаване на реч Whisper на OpenAI",
           "details": "Escrevoz използва ggml за бързо локално реч-към-текст. Благодарности на Georgi Gerganov и сътрудниците за отличната работа."
+        },
+        "handy": {
+          "title": "Handy",
+          "description": "Escrevoz е базиран на Handy – приложение с отворен код от CJ Pais.",
+          "details": "MIT License · Copyright (c) 2025 CJ Pais"
         }
       }
     }

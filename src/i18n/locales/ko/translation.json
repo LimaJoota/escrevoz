@@ -933,6 +933,11 @@
           "title": "ggml",
           "description": "OpenAI의 Whisper 자동 음성 인식 모델의 고성능 추론",
           "details": "Escrevoz는 빠르고 로컬 음성-텍스트 처리를 위해 ggml를 사용합니다. Georgi Gerganov와 기여자들의 놀라운 작업에 감사드립니다."
+        },
+        "handy": {
+          "title": "Handy",
+          "description": "Escrevoz는 CJ Pais가 만든 오픈 소스 앱 Handy를 기반으로 합니다.",
+          "details": "MIT License · Copyright (c) 2025 CJ Pais"
         }
       }
     }

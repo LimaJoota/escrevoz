@@ -933,6 +933,11 @@
           "title": "ggml",
           "description": "Inférence haute performance du modèle de reconnaissance vocale automatique Whisper d'OpenAI",
           "details": "Escrevoz utilise ggml pour un traitement rapide et local de la parole en texte. Merci au travail incroyable de Georgi Gerganov et des contributeurs."
+        },
+        "handy": {
+          "title": "Handy",
+          "description": "Escrevoz est basé sur Handy, une application open source de CJ Pais.",
+          "details": "MIT License · Copyright (c) 2025 CJ Pais"
         }
       }
     }

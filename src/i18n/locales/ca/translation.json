@@ -933,6 +933,11 @@
           "title": "ggml",
           "description": "Biblioteca de tensors d'alt rendiment per a la inferència d'aprenentatge automàtic al dispositiu",
           "details": "La transcripció local de veu a text del Escrevoz es basa en el transcribe.cpp i el ggml. Gràcies a la gran feina de Georgi Gerganov i dels col·laboradors."
+        },
+        "handy": {
+          "title": "Handy",
+          "description": "Escrevoz es basa en Handy, una aplicació de codi obert de CJ Pais.",
+          "details": "MIT License · Copyright (c) 2025 CJ Pais"
         }
       }
     }

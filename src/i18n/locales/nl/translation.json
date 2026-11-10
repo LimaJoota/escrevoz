@@ -933,6 +933,11 @@
           "title": "ggml",
           "description": "Krachtige tensorbibliotheek voor lokale AI-verwerking",
           "details": "Escrevoz's lokale spraak-naar-tekst is gebouwd op transcribe.cpp en ggml. Met dank aan het geweldige werk van Georgi Gerganov en alle bijdragers."
+        },
+        "handy": {
+          "title": "Handy",
+          "description": "Escrevoz is gebaseerd op Handy, een opensource-app van CJ Pais.",
+          "details": "MIT License · Copyright (c) 2025 CJ Pais"
         }
       }
     }

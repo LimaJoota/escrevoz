@@ -933,6 +933,11 @@
           "title": "ggml",
           "description": "Cihaz üzerinde makine öğrenmesi çıkarımı için yüksek performanslı tensör kütüphanesi",
           "details": "Escrevoz'nin yerel konuşmadan metne dönüştürme özelliği transcribe.cpp ve ggml üzerine kuruludur. Georgi Gerganov'a ve katkıda bulunanlara harika çalışmaları için teşekkür ederiz."
+        },
+        "handy": {
+          "title": "Handy",
+          "description": "Escrevoz, CJ Pais'in açık kaynaklı uygulaması Handy'ye dayanır.",
+          "details": "MIT License · Copyright (c) 2025 CJ Pais"
         }
       }
     }

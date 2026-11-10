@@ -933,6 +933,11 @@
           "title": "ggml",
           "description": "針對 OpenAI Whisper 自動語音辨識模型的高效能推理引擎",
           "details": "Escrevoz 使用 ggml 進行快速的本機語音轉文字處理。感謝 Georgi Gerganov 和貢獻者們的傑出工作"
+        },
+        "handy": {
+          "title": "Handy",
+          "description": "Escrevoz 以 CJ Pais 的開源應用程式 Handy 為基礎。",
+          "details": "MIT License · Copyright (c) 2025 CJ Pais"
         }
       }
     }

@@ -12,6 +12,8 @@ interface ModelDropdownProps {
   // A file is transcribing: show the models, but don't let them be picked.
   locked?: boolean;
   onModelSelect: (modelId: string) => void;
+  /** On its way out: plays the exit and ignores clicks. */
+  closing?: boolean;
 }
 
 const ModelDropdown: React.FC<ModelDropdownProps> = ({
@@ -19,6 +21,7 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
   currentModelId,
   locked = false,
   onModelSelect,
+  closing = false,
 }) => {
   const { t } = useTranslation();
   const downloadedModels = models.filter((m) => m.is_downloaded);
@@ -29,7 +32,9 @@ const ModelDropdown: React.FC<ModelDropdownProps> = ({
   };
 
   return (
-    <div className="absolute bottom-full start-0 mb-2 w-64 max-h-[60vh] overflow-y-auto bg-background border border-line rounded-lg shadow-lg py-2 z-50">
+    <div
+      className={`${closing ? "motion-out " : ""}motion-menu-up absolute bottom-full start-0 mb-2 w-64 max-h-[60vh] overflow-y-auto bg-background border border-line rounded-lg shadow-lg py-2 z-50`}
+    >
       {locked && (
         <div className="px-3 pb-2 mb-1 text-xs text-ink-2 border-b border-line">
           {t("modelSelector.lockedWhileTranscribing")}

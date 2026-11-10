@@ -933,6 +933,11 @@
           "title": "ggml",
           "description": "डिवाइस पर ही मशीन लर्निंग इन्फ़रेंस के लिए हाई-परफ़ॉर्मेंस टेंसर लाइब्रेरी",
           "details": "Escrevoz का लोकल स्पीच-टू-टेक्स्ट transcribe.cpp और ggml पर आधारित है. Georgi Gerganov और योगदान देने वालों के शानदार काम के लिए धन्यवाद."
+        },
+        "handy": {
+          "title": "Handy",
+          "description": "Escrevoz, CJ Pais के ओपन-सोर्स ऐप Handy पर आधारित है।",
+          "details": "MIT License · Copyright (c) 2025 CJ Pais"
         }
       }
     }

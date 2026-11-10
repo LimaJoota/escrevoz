@@ -1,0 +1,137 @@
+/* Motion for the settings window. Every animation fills backwards only: a
+   transform left in place would trap the `position: fixed` tooltips and dialogs
+   inside it. */
+:root {
+  --motion-fast: 110ms;
+  --motion-base: 180ms;
+  --motion-slow: 240ms;
+  --motion-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes motion-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes motion-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes motion-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+/* A section changing. */
+.motion-section {
+  animation: motion-fade var(--motion-base) ease-out backwards;
+}
+
+/* Its groups arrive in order, with a cap so a long page doesn't lag. */
+.motion-group {
+  animation: motion-rise var(--motion-slow) var(--motion-ease) backwards;
+}
+.motion-group:nth-child(2) {
+  animation-delay: 40ms;
+}
+.motion-group:nth-child(3) {
+  animation-delay: 80ms;
+}
+.motion-group:nth-child(n + 4) {
+  animation-delay: 120ms;
+}
+
+/* Menus grow from the edge they're attached to. */
+.motion-menu-down,
+.motion-menu-up {
+  animation: motion-pop var(--motion-fast) var(--motion-ease) backwards;
+}
+.motion-menu-down {
+  transform-origin: top;
+}
+.motion-menu-up {
+  transform-origin: bottom;
+}
+
+.motion-backdrop {
+  animation: motion-fade var(--motion-base) ease-out backwards;
+}
+.motion-dialog {
+  animation: motion-pop var(--motion-base) var(--motion-ease) backwards;
+}
+.motion-tooltip {
+  animation: motion-fade var(--motion-fast) ease-out backwards;
+}
+/* Exits: quicker than entries. They hold the end state, which is safe because
+   the element unmounts right after (see usePresence). */
+@keyframes motion-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes motion-pop-out {
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+.motion-out {
+  pointer-events: none;
+}
+.motion-backdrop.motion-out {
+  animation: motion-fade-out var(--motion-fast) ease-in forwards;
+}
+.motion-dialog.motion-out,
+.motion-menu-down.motion-out,
+.motion-menu-up.motion-out {
+  animation: motion-pop-out var(--motion-fast) ease-in forwards;
+}
+
+/* Anything pressable gives under the pointer. */
+.motion-press {
+  transition:
+    color var(--motion-fast) ease-out,
+    background-color var(--motion-fast) ease-out,
+    border-color var(--motion-fast) ease-out,
+    opacity var(--motion-fast) ease-out,
+    scale var(--motion-fast) var(--motion-ease);
+}
+.motion-press:active:not(:disabled) {
+  scale: 0.97;
+}
+
+:where(input:not([type="range"]), textarea) {
+  transition:
+    border-color var(--motion-fast) ease-out,
+    box-shadow var(--motion-fast) ease-out;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  transition: scale var(--motion-fast) var(--motion-ease);
+}
+input[type="range"]:hover::-webkit-slider-thumb {
+  scale: 1.15;
+}
+input[type="range"]:active::-webkit-slider-thumb {
+  scale: 1.05;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [class*="motion-"] {
+    animation: none;
+    transition: none;
+  }
+  .motion-press:active:not(:disabled) {
+    scale: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    transition: none;
+    scale: none;
+  }
+}

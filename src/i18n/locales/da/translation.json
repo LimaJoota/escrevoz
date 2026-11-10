@@ -933,6 +933,11 @@
           "title": "ggml",
           "description": "Højtydende tensor-bibliotek til maskinlæringsinferens på enheden",
           "details": "Escrevoz lokale tale-til-tekst funktionalitet er bygget på transcribe.cpp og ggml. Tak for det fantastiske arbejde af Georgi Gerganov og bidragyderne."
+        },
+        "handy": {
+          "title": "Handy",
+          "description": "Escrevoz bygger på Handy, en open source-app af CJ Pais.",
+          "details": "MIT License · Copyright (c) 2025 CJ Pais"
         }
       }
     }

@@ -11,6 +11,7 @@ import {
 } from "../../stores/transcriptionJobsStore";
 import ModelStatusButton from "./ModelStatusButton";
 import ModelDropdown from "./ModelDropdown";
+import { usePresence } from "@/hooks/usePresence";
 import DownloadProgressDisplay from "./DownloadProgressDisplay";
 
 import { ModelStateEvent } from "@/lib/types/events";
@@ -42,6 +43,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ onError }) => {
   const [modelStatus, setModelStatus] = useState<ModelStatus>("unloaded");
   const [modelError, setModelError] = useState<string | null>(null);
   const [showModelDropdown, setShowModelDropdown] = useState(false);
+  const modelMenu = usePresence(showModelDropdown, 110);
   // Track pending model switch for optimistic display
   const [pendingModelId, setPendingModelId] = useState<string | null>(null);
 
@@ -238,8 +240,9 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ onError }) => {
         />
 
         {/* Model Dropdown */}
-        {showModelDropdown && (
+        {modelMenu.mounted && (
           <ModelDropdown
+            closing={modelMenu.closing}
             models={models}
             currentModelId={displayModelId}
             locked={modelsLocked}

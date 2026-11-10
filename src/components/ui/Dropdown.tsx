@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { usePresence } from "@/hooks/usePresence";
 
 export interface DropdownOption {
   value: string;
@@ -37,6 +38,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
 }) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  const menu = usePresence(isOpen && !disabled, 110);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -114,9 +116,9 @@ export const Dropdown: React.FC<DropdownProps> = ({
           />
         </svg>
       </button>
-      {isOpen && !disabled && (
+      {menu.mounted && (
         <div
-          className={`absolute ${placement === "above" ? "bottom-full mb-1" : "top-full mt-1"} bg-background border border-line rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto p-1 ${
+          className={`${menu.closing ? "motion-out " : ""}absolute ${placement === "above" ? "motion-menu-up bottom-full mb-1" : "motion-menu-down top-full mt-1"} bg-background border border-line rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto p-1 ${
             menuClassName ?? "left-0 right-0"
           }`}
         >
