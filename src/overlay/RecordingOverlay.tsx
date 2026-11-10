@@ -31,6 +31,9 @@ const isNoticeState = (state: OverlayState) =>
 // Number of reactive bars in the waveform (the simple, smoothed style shared by
 // every overlay form). Mic levels arrive as 16 FFT buckets; we take the first N.
 const WAVE_BARS = 9;
+// The waveform scrolls: one bar per WAVE_STEP_MS, newest on the right.
+const WAVE_HISTORY = 24;
+const WAVE_STEP_MS = 70;
 
 // Only call out a model load in the Live preview once it has run this long.
 // Warm loads finish in well under this (~0.2s on Apple Silicon, ~1.5s on a
@@ -68,7 +71,7 @@ const RecordingOverlay: React.FC = () => {
   // Latched per Live session: once the loading notice has opened the panel, keep
   // it open after the load so it doesn't collapse and reopen when text arrives.
   const [loadNoticeShown, setLoadNoticeShown] = useState(false);
-  const [levels, setLevels] = useState<number[]>(Array(WAVE_BARS).fill(0));
+  const [levels, setLevels] = useState<number[]>(Array(WAVE_HISTORY).fill(0));
   const [streamText, setStreamText] = useState<StreamTextEvent>({
     committed: "",
     tentative: "",
@@ -99,6 +102,7 @@ const RecordingOverlay: React.FC = () => {
   const fadeTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   const smoothedLevelsRef = useRef<number[]>(Array(16).fill(0));
+  const lastWaveStepRef = useRef(0);
   // Live-text scroll-back: the text region "sticks" to the newest line while the
   // user is at the bottom; if they scroll up to read history, auto-follow pauses
   // until they scroll back down.
@@ -123,7 +127,7 @@ const RecordingOverlay: React.FC = () => {
         if (overlayState === "recording" || overlayState === "streaming") {
           setCaptureReady(false);
           smoothedLevelsRef.current = Array(16).fill(0);
-          setLevels(Array(WAVE_BARS).fill(0));
+          setLevels(Array(WAVE_HISTORY).fill(0));
           setStreamText({ committed: "", tentative: "" });
         }
 
@@ -175,14 +179,18 @@ const RecordingOverlay: React.FC = () => {
 
       const unlistenLevel = await listen<number[]>("mic-level", (event) => {
         const newLevels = event.payload as number[];
-        // Exponential smoothing across the 16 buckets, then take the first N
-        // bars for the shared waveform.
+        // Exponential smoothing across the 16 buckets; the loudest of the first
+        // N becomes the newest bar of the scrolling waveform.
         const smoothed = smoothedLevelsRef.current.map((prev, i) => {
           const target = newLevels[i] || 0;
           return prev * 0.7 + target * 0.3;
         });
         smoothedLevelsRef.current = smoothed;
-        setLevels(smoothed.slice(0, WAVE_BARS));
+        const now = performance.now();
+        if (now - lastWaveStepRef.current < WAVE_STEP_MS) return;
+        lastWaveStepRef.current = now;
+        const peak = Math.max(...smoothed.slice(0, WAVE_BARS));
+        setLevels((prev) => [...prev.slice(1), peak]);
       });
 
       const unlistenStream = await events.streamTextEvent.listen((event) => {
@@ -333,7 +341,7 @@ const RecordingOverlay: React.FC = () => {
         <i
           key={i}
           style={{
-            height: `${Math.max(3, Math.min(18, 3 + Math.pow(v, 0.7) * 15))}px`,
+            height: `${Math.max(2, Math.min(18, 2 + Math.pow(v, 0.7) * 16))}px`,
           }}
         />
       ))}

@@ -350,19 +350,20 @@
 .swave {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   padding-right: 8px;
   height: 18px;
   flex: none;
 }
+/* Thin bars that scroll left; silence leaves 2px dots. No height transition,
+   or the scroll would read as wobble. */
 .swave i {
-  width: 4px;
-  min-height: 3px;
+  width: 2px;
+  min-height: 2px;
   max-height: 18px;
-  border-radius: 2px;
+  border-radius: 1px;
   background: var(--s-accent);
   transition:
-    height 80ms linear,
     background-color 180ms ease,
     opacity 180ms ease;
 }
