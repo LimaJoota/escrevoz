@@ -3,6 +3,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import "./RecordingOverlay.css";
 import { commands, events } from "@/bindings";
+import { usePresence } from "@/hooks/usePresence";
 import type {
   Notice,
   StreamPhase,
@@ -57,6 +58,8 @@ const NOTICE_PILL_CHROME = 49;
 const RecordingOverlay: React.FC = () => {
   const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
+  // Exit must end before `hide_recording_overlay` unmaps the window (OVERLAY_FADE_MS).
+  const pill = usePresence(isVisible, 220);
   const [state, setState] = useState<OverlayState>("recording");
   // `Stream::play()` returning does not mean hardware callbacks are flowing.
   // Stay visually in an arming state until the backend processes the first
@@ -334,7 +337,8 @@ const RecordingOverlay: React.FC = () => {
     );
   }, [noticeTitle, isVisible]);
 
-  if (!isVisible && !shownNotice) return null;
+  if (!pill.mounted && !shownNotice) return null;
+  const pillOut = pill.closing && !shownNotice;
 
   // Re-pin when the user is within ~a line of the bottom; unpin otherwise.
   const handleStreamScroll = () => {
@@ -574,11 +578,11 @@ const RecordingOverlay: React.FC = () => {
   return (
     <div
       dir={direction}
-      className={`ov-stage ${position} ov-fade ${isVisible ? "show" : ""}`}
+      className={`ov-stage ${position} ov-fade ${isVisible || pillOut ? "show" : ""}`}
     >
       {noticeProbe}
       <div
-        className={`scard compact ${working && isVisible ? "cworking" : ""} ${noticeClass}`}
+        className={`scard compact ${working && isVisible ? "cworking" : ""} ${pillOut ? "pill-out" : ""} ${noticeClass}`}
         style={shownNotice ? { width: noticeWidth } : undefined}
         onClick={dismissNotice}
       >
