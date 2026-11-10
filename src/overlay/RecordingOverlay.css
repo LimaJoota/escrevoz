@@ -5,14 +5,10 @@
   /* Near-opaque app surface (theme.css --color-background at 98%). Auto-flips
      light/dark with --color-background, so no dark-mode override is needed. */
   --s-surface: color-mix(in srgb, var(--color-background) 98%, transparent);
-  /* Accent = logo pink; flips automatically via --color-logo-primary. */
-  --s-accent: var(--color-logo-primary);
+  /* Accent = the Escrevoz cursor orange, the same in both themes. */
+  --s-accent: #ff5a1f;
   /* The rest come from theme.css, which already follows the theme setting. */
-  --s-accent-soft: color-mix(
-    in srgb,
-    var(--color-logo-primary) 20%,
-    transparent
-  );
+  --s-accent-soft: color-mix(in srgb, var(--s-accent) 20%, transparent);
   --s-muted: var(--color-ink-2);
   --s-faint: var(--color-ink-3);
   --s-border: var(--color-line);
@@ -278,8 +274,8 @@
   }
 }
 
-/* base row — dot (left) | waveform (center) | timer + cancel (right).
-   Same structure for pill & panel; the dot stays anchored left in both. */
+/* base row — quote mark (left) | waveform (center) | timer + cancel (right).
+   Same structure for pill & panel; the quote mark stays anchored left in both. */
 .sbase {
   height: var(--ov-base-h);
   flex: none; /* the control row never squashes; only the text region gives */
@@ -303,34 +299,16 @@
   gap: 10px;
   justify-self: end;
 }
-.sdot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
+.squote {
+  width: 14px;
+  height: 11px;
   flex: none;
-  box-sizing: border-box;
-  transition:
-    background-color 180ms ease,
-    opacity 180ms ease;
+  fill: var(--color-text);
+  transition: opacity 180ms ease;
 }
-.sdot.ready {
-  background: var(--s-accent);
-  opacity: 1;
-  animation: sdot-pulse 1.9s infinite;
-}
-/* A quiet neutral dot while the host has not delivered its first sample yet. */
-.sdot.arming {
-  background: var(--s-muted);
-  opacity: 0.45;
-  animation: none;
-}
-@keyframes sdot-pulse {
-  0% {
-    box-shadow: 0 0 0 0 var(--s-accent-soft);
-  }
-  70% {
-    box-shadow: 0 0 0 7px transparent;
-  }
+/* Faint until the host delivers its first sample. */
+.squote.arming {
+  opacity: 0.35;
 }
 .stimer {
   font-size: 12px;
@@ -350,19 +328,31 @@
 .swave {
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding-right: 8px;
+  /* 24 bars of 2px + 2px gap, then the 3px cursor. The 25th bar waits behind
+     the cursor and slides out from it. A margin, not padding, so the clip edge
+     is the cursor's edge. */
+  position: relative;
+  width: 99px;
+  overflow: hidden;
+  margin-right: 8px;
   height: 18px;
   flex: none;
 }
-/* Thin bars that scroll left; silence leaves 2px dots. No height transition,
-   or the scroll would read as wobble. */
+.swave-track {
+  display: flex;
+  /* Bars stand on a baseline, like letters on a line of text. */
+  align-items: flex-end;
+  gap: 2px;
+  height: 100%;
+}
+/* Thin ink bars that scroll left; silence leaves a dotted baseline. No height
+   transition, or the scroll would read as wobble. */
 .swave i {
   width: 2px;
   min-height: 2px;
   max-height: 18px;
   border-radius: 1px;
-  background: var(--s-accent);
+  background: var(--color-text);
   transition:
     background-color 180ms ease,
     opacity 180ms ease;
@@ -371,7 +361,28 @@
   height: 6px !important;
   background: var(--s-muted);
   opacity: 0.35;
+  transform-origin: bottom;
   animation: swave-arming 900ms ease-in-out infinite;
+}
+/* The Escrevoz cursor ends the line: solid while the voice types, blinking in
+   the pauses like a text caret. */
+.scursor {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 3px;
+  height: 18px;
+  border-radius: 1px;
+  background: var(--s-accent);
+  animation: scaret-blink 1.05s steps(1) infinite;
+}
+.scursor.typing {
+  animation: none;
+}
+.swave.arming .scursor {
+  background: var(--s-muted);
+  opacity: 0.35;
+  animation: none;
 }
 .swave.arming i:nth-child(2),
 .swave.arming i:nth-child(8) {

@@ -31,8 +31,9 @@ const isNoticeState = (state: OverlayState) =>
 // Number of reactive bars in the waveform (the simple, smoothed style shared by
 // every overlay form). Mic levels arrive as 16 FFT buckets; we take the first N.
 const WAVE_BARS = 9;
-// The waveform scrolls: one bar per WAVE_STEP_MS, newest on the right.
-const WAVE_HISTORY = 24;
+// The waveform scrolls: one bar per WAVE_STEP_MS, newest on the right. One bar
+// more than shows (24, the .swave width) slides in during each step.
+const WAVE_HISTORY = 25;
 const WAVE_STEP_MS = 70;
 
 // Only call out a model load in the Live preview once it has run this long.
@@ -102,7 +103,7 @@ const RecordingOverlay: React.FC = () => {
   const fadeTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   const smoothedLevelsRef = useRef<number[]>(Array(16).fill(0));
-  const lastWaveStepRef = useRef(0);
+  const waveTrackRef = useRef<HTMLDivElement>(null);
   // Live-text scroll-back: the text region "sticks" to the newest line while the
   // user is at the bottom; if they scroll up to read history, auto-follow pauses
   // until they scroll back down.
@@ -179,18 +180,13 @@ const RecordingOverlay: React.FC = () => {
 
       const unlistenLevel = await listen<number[]>("mic-level", (event) => {
         const newLevels = event.payload as number[];
-        // Exponential smoothing across the 16 buckets; the loudest of the first
-        // N becomes the newest bar of the scrolling waveform.
+        // Exponential smoothing across the 16 buckets; the wave clock reads the
+        // loudest of the first N as its newest bar.
         const smoothed = smoothedLevelsRef.current.map((prev, i) => {
           const target = newLevels[i] || 0;
           return prev * 0.7 + target * 0.3;
         });
         smoothedLevelsRef.current = smoothed;
-        const now = performance.now();
-        if (now - lastWaveStepRef.current < WAVE_STEP_MS) return;
-        lastWaveStepRef.current = now;
-        const peak = Math.max(...smoothed.slice(0, WAVE_BARS));
-        setLevels((prev) => [...prev.slice(1), peak]);
       });
 
       const unlistenStream = await events.streamTextEvent.listen((event) => {
@@ -281,6 +277,25 @@ const RecordingOverlay: React.FC = () => {
     return () => clearTimeout(id);
   }, [state, isVisible, recoveryHeld, recovery]);
 
+  // A steady clock, not the mic events, adds each bar, so every step lasts
+  // exactly as long as its slide and the motion never stalls.
+  useEffect(() => {
+    if (!isVisible) return;
+    const id = setInterval(() => {
+      const peak = Math.max(...smoothedLevelsRef.current.slice(0, WAVE_BARS));
+      setLevels((prev) => [...prev.slice(1), peak]);
+    }, WAVE_STEP_MS);
+    return () => clearInterval(id);
+  }, [isVisible]);
+
+  // Each new bar enters from the right edge while the rest slide one bar left.
+  useLayoutEffect(() => {
+    waveTrackRef.current?.animate(
+      [{ transform: "translateX(0)" }, { transform: "translateX(-4px)" }],
+      { duration: WAVE_STEP_MS, easing: "linear", fill: "forwards" },
+    );
+  }, [levels]);
+
   // The card never takes focus, so mouse events never reach it; the backend
   // sends the pointer (window points) instead.
   useEffect(() => {
@@ -337,14 +352,19 @@ const RecordingOverlay: React.FC = () => {
   // ---- Shared building blocks (one visual language for every overlay form) ----
   const waveform = (
     <div className={`swave ${captureReady ? "ready" : "arming"}`}>
-      {levels.map((v, i) => (
-        <i
-          key={i}
-          style={{
-            height: `${Math.max(2, Math.min(18, 2 + Math.pow(v, 0.7) * 16))}px`,
-          }}
-        />
-      ))}
+      <div className="swave-track" ref={waveTrackRef}>
+        {levels.map((v, i) => (
+          <i
+            key={i}
+            style={{
+              height: `${Math.max(2, Math.min(18, 2 + Math.pow(v, 0.7) * 16))}px`,
+            }}
+          />
+        ))}
+      </div>
+      <span
+        className={`scursor ${levels[WAVE_HISTORY - 1] > 0.08 ? "typing" : ""}`}
+      />
     </div>
   );
 
@@ -365,12 +385,22 @@ const RecordingOverlay: React.FC = () => {
     </button>
   );
 
-  // dot (left) | waveform (center) | timer + cancel (right) — same structure for
+  // quote mark (left) | waveform (center) | timer + cancel (right) — same structure for
   // pill & panel, so the Live morph is a pure width change.
   const listeningRow = (showTimer: boolean, showCancel: boolean) => (
     <div className="sbase">
       <div className="sbase-l">
-        <span className={`sdot ${captureReady ? "ready" : "arming"}`} />
+        {/* The Escrevoz quote mark opens the line the voice writes. */}
+        <svg
+          className={`squote ${captureReady ? "ready" : "arming"}`}
+          viewBox="38 54 128 101"
+          aria-hidden="true"
+        >
+          <circle cx="66" cy="127" r="28" />
+          <path d="M38 127A84 84 0 0 1 80 54.3L92 75A60 60 0 0 0 64 111.5Z" />
+          <circle cx="138" cy="127" r="28" />
+          <path d="M110 127A84 84 0 0 1 152 54.3L164 75A60 60 0 0 0 136 111.5Z" />
+        </svg>
       </div>
       {waveform}
       <div className="sbase-r">
