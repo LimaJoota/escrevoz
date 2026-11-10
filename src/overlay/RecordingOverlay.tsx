@@ -375,9 +375,6 @@ const RecordingOverlay: React.FC = () => {
           <i key={i} style={{ height: `${2 + Math.pow(v, 0.8) * 16}px` }} />
         ))}
       </div>
-      <span
-        className={`scursor ${bars.some((v) => v > 0.12) ? "typing" : ""}`}
-      />
     </div>
   );
 
@@ -406,6 +403,10 @@ const RecordingOverlay: React.FC = () => {
         {/* The Escrevoz quote mark opens the line the voice writes. */}
         <svg
           className={`squote ${captureReady ? "ready" : "arming"}`}
+          // The brand orange swells a little with the voice.
+          style={{
+            transform: `translateY(-3px) scale(${1 + Math.max(...bars) * 0.18})`,
+          }}
           viewBox="38 54 128 101"
           aria-hidden="true"
         >
