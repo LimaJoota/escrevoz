@@ -30,6 +30,7 @@ Pelo Homebrew, o jeito mais fácil:
 
 ```bash
 brew tap limajoota/escrevoz https://github.com/LimaJoota/escrevoz
+brew trust limajoota/escrevoz
 brew install --cask escrevoz
 ```
 
