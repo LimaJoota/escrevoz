@@ -1027,7 +1027,7 @@
     "loadingModel": "Wczytywanie modelu...",
     "recovery": {
       "title": "Nie wkleiło się?",
-      "hint": "Kliknij, aby skopiować",
+      "hint": "Kliknij, aby wkleić",
       "close": "Zamknij"
     }
   },

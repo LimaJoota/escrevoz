@@ -8,7 +8,6 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize};
-use tauri_plugin_clipboard_manager::ClipboardExt;
 
 #[cfg(not(target_os = "macos"))]
 use log::debug;
@@ -204,11 +203,13 @@ fn release_recovery_cancel(app: &AppHandle) {
     }
 }
 
-/// Copies the recovery card's `index`th transcript (the user clicked its row)
-/// and closes the card.
+/// Pastes the recovery card's `index`th transcript into the app in front and
+/// closes the card. The user clicks the target field first, then the row; the
+/// card never takes focus, so the paste lands in that field, with the same paste
+/// method and clipboard handling as a dictation (nothing left on the clipboard).
 #[tauri::command]
 #[specta::specta]
-pub fn copy_recovery_text(app: AppHandle, index: u32) -> Result<(), String> {
+pub fn paste_recovery_text(app: AppHandle, index: u32) -> Result<(), String> {
     let text = RECOVERY_TEXTS
         .lock()
         .ok()
@@ -218,13 +219,31 @@ pub fn copy_recovery_text(app: AppHandle, index: u32) -> Result<(), String> {
             text
         })
         .ok_or("No transcript to recover")?;
-    app.clipboard()
-        .write_text(text)
-        .map_err(|e| format!("Failed to copy transcript: {e}"))?;
     release_recovery_cancel(&app);
     hide_recording_overlay(&app);
+    // Off the main thread, like a dictation's paste: it sleeps between steps.
+    std::thread::spawn(move || {
+        // Lets the click finish before the paste keys go out.
+        std::thread::sleep(RECOVERY_PASTE_SETTLE);
+        match crate::clipboard::paste(text, app.clone()) {
+            Ok(()) => crate::notices::clear(&app, crate::notices::NoticeSource::Dictation),
+            Err(e) => {
+                log::error!("Failed to paste a recovered transcript: {e}");
+                crate::notices::raise(
+                    &app,
+                    crate::notices::Notice::new(
+                        crate::notices::NoticeCode::PasteFailed,
+                        crate::notices::NoticeSource::Dictation,
+                    ),
+                );
+            }
+        }
+    });
     Ok(())
 }
+
+/// Pause between the click on a recovery row and its paste.
+const RECOVERY_PASTE_SETTLE: Duration = Duration::from_millis(120);
 
 /// Closes the recovery card (its close button, Esc or timeout) without copying.
 #[tauri::command]

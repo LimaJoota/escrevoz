@@ -1027,7 +1027,7 @@
     "loadingModel": "Indlæser model...",
     "recovery": {
       "title": "Blev det ikke indsat?",
-      "hint": "Klik for at kopiere",
+      "hint": "Klik for at indsætte",
       "close": "Luk"
     }
   },

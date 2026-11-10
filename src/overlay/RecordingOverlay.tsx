@@ -43,7 +43,8 @@ const WAVE_STEP_MS = 70;
 const SLOW_MODEL_LOAD_MS = 2000;
 
 // How long the paste-recovery card stays up; resting the pointer on it holds it.
-const RECOVERY_VISIBLE_MS = 10000;
+// Time to click the target field first, then the row.
+const RECOVERY_VISIBLE_MS = 20000;
 
 type RecoveryPayload = { labels: string[]; lost: boolean };
 
@@ -439,7 +440,7 @@ const RecordingOverlay: React.FC = () => {
     : undefined;
 
   // ---- Paste recovery: the transcripts that may not have landed, styled like
-  // the Cmd+Shift+V menu. A click on a row copies it.
+  // the Cmd+Shift+V menu. A click on a row pastes it into the app in front.
   if (state === "recovery") {
     return (
       // The window sits at the pointer, so the card hangs from its top edge.
@@ -477,7 +478,7 @@ const RecordingOverlay: React.FC = () => {
               }
               data-index={index}
               key={index}
-              onClick={() => commands.copyRecoveryText(index)}
+              onClick={() => commands.pasteRecoveryText(index)}
             >
               {label}
             </button>

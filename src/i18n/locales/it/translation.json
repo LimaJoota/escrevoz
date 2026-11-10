@@ -1027,7 +1027,7 @@
     "loadingModel": "Caricamento del modello...",
     "recovery": {
       "title": "Non incollato?",
-      "hint": "Fai clic per copiare",
+      "hint": "Fai clic per incollare",
       "close": "Chiudi"
     }
   },

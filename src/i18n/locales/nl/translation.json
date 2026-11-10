@@ -1027,7 +1027,7 @@
     "loadingModel": "Model laden...",
     "recovery": {
       "title": "Niet geplakt?",
-      "hint": "Klik om te kopiëren",
+      "hint": "Klik om te plakken",
       "close": "Sluiten"
     }
   },

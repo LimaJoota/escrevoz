@@ -1027,7 +1027,7 @@
     "loadingModel": "Loading model...",
     "recovery": {
       "title": "Didn't paste?",
-      "hint": "Click to copy",
+      "hint": "Click to paste",
       "close": "Close"
     }
   },

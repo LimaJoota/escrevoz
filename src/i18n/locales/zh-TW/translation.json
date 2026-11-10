@@ -1027,7 +1027,7 @@
     "loadingModel": "正在載入模型...",
     "recovery": {
       "title": "沒有貼上？",
-      "hint": "點擊複製",
+      "hint": "點擊貼上",
       "close": "關閉"
     }
   },

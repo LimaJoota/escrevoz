@@ -1027,7 +1027,7 @@
     "loadingModel": "Chargement du modèle...",
     "recovery": {
       "title": "Pas collé ?",
-      "hint": "Cliquez pour copier",
+      "hint": "Cliquez pour coller",
       "close": "Fermer"
     }
   },
