@@ -356,9 +356,12 @@
   gap: 10px;
   justify-self: end;
 }
+/* As in the logo: the quote's top meets the cursor's top, and its dots sit on
+   the wave's midline. */
 .squote {
-  width: 14px;
-  height: 11px;
+  width: 15px;
+  height: 12px;
+  transform: translateY(-3px);
   flex: none;
   fill: var(--color-text);
   transition: opacity 180ms ease;
@@ -385,9 +388,7 @@
 .swave {
   display: flex;
   align-items: center;
-  /* 24 bars of 2px + 2px gap, then the 3px cursor. The 25th bar waits behind
-     the cursor and slides out from it. A margin, not padding, so the clip edge
-     is the cursor's edge. */
+  /* 24 bars of 2px + 2px gap, plus room for the 3px cursor at the end. */
   position: relative;
   width: 99px;
   overflow: hidden;
@@ -397,13 +398,12 @@
 }
 .swave-track {
   display: flex;
-  /* Bars stand on a baseline, like letters on a line of text. */
-  align-items: flex-end;
+  /* Bars grow up and down from a midline. */
+  align-items: center;
   gap: 2px;
   height: 100%;
 }
-/* Thin ink bars that scroll left; silence leaves a dotted baseline. No height
-   transition, or the scroll would read as wobble. */
+/* Thin ink bars that stay put; silence leaves a dotted midline. */
 .swave i {
   width: 2px;
   min-height: 2px;
@@ -411,6 +411,7 @@
   border-radius: 1px;
   background: var(--color-text);
   transition:
+    height 120ms ease-out,
     background-color 180ms ease,
     opacity 180ms ease;
 }
@@ -418,20 +419,20 @@
   height: 6px !important;
   background: var(--s-muted);
   opacity: 0.35;
-  transform-origin: bottom;
   animation: swave-arming 900ms ease-in-out infinite;
 }
 /* The Escrevoz cursor ends the line: solid while the voice types, blinking in
    the pauses like a text caret. */
 .scursor {
   position: absolute;
-  right: 0;
-  bottom: 0;
+  top: 0;
   width: 3px;
   height: 18px;
   border-radius: 1px;
   background: var(--s-accent);
   animation: scaret-blink 1.05s steps(1) infinite;
+  /* Matches WAVE_STEP_MS, so the walk reads as one steady glide. */
+  transition: left 150ms linear;
 }
 .scursor.typing {
   animation: none;

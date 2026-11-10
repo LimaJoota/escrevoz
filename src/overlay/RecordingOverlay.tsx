@@ -32,10 +32,11 @@ const isNoticeState = (state: OverlayState) =>
 // Number of reactive bars in the waveform (the simple, smoothed style shared by
 // every overlay form). Mic levels arrive as 16 FFT buckets; we take the first N.
 const WAVE_BARS = 9;
-// The waveform scrolls: one bar per WAVE_STEP_MS, newest on the right. One bar
-// more than shows (24, the .swave width) slides in during each step.
-const WAVE_HISTORY = 25;
-const WAVE_STEP_MS = 70;
+// The bars stay put and the cursor walks right, writing one bar per
+// WAVE_STEP_MS. A full line (24 bars, the .swave width) starts over on the left.
+const WAVE_HISTORY = 24;
+const WAVE_STEP_MS = 150;
+const EMPTY_WAVE = { levels: Array<number>(WAVE_HISTORY).fill(0), pos: 0 };
 
 // Only call out a model load in the Live preview once it has run this long.
 // Warm loads finish in well under this (~0.2s on Apple Silicon, ~1.5s on a
@@ -76,7 +77,7 @@ const RecordingOverlay: React.FC = () => {
   // Latched per Live session: once the loading notice has opened the panel, keep
   // it open after the load so it doesn't collapse and reopen when text arrives.
   const [loadNoticeShown, setLoadNoticeShown] = useState(false);
-  const [levels, setLevels] = useState<number[]>(Array(WAVE_HISTORY).fill(0));
+  const [wave, setWave] = useState(EMPTY_WAVE);
   const [streamText, setStreamText] = useState<StreamTextEvent>({
     committed: "",
     tentative: "",
@@ -107,7 +108,6 @@ const RecordingOverlay: React.FC = () => {
   const fadeTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   const smoothedLevelsRef = useRef<number[]>(Array(16).fill(0));
-  const waveTrackRef = useRef<HTMLDivElement>(null);
   // Live-text scroll-back: the text region "sticks" to the newest line while the
   // user is at the bottom; if they scroll up to read history, auto-follow pauses
   // until they scroll back down.
@@ -132,7 +132,7 @@ const RecordingOverlay: React.FC = () => {
         if (overlayState === "recording" || overlayState === "streaming") {
           setCaptureReady(false);
           smoothedLevelsRef.current = Array(16).fill(0);
-          setLevels(Array(WAVE_HISTORY).fill(0));
+          setWave(EMPTY_WAVE);
           setStreamText({ committed: "", tentative: "" });
         }
 
@@ -281,24 +281,23 @@ const RecordingOverlay: React.FC = () => {
     return () => clearTimeout(id);
   }, [state, isVisible, recoveryHeld, recovery]);
 
-  // A steady clock, not the mic events, adds each bar, so every step lasts
-  // exactly as long as its slide and the motion never stalls.
+  // A steady clock, not the mic events, adds each bar, so the cursor glides at
+  // one even speed and silence writes dots.
   useEffect(() => {
     if (!isVisible) return;
     const id = setInterval(() => {
       const peak = Math.max(...smoothedLevelsRef.current.slice(0, WAVE_BARS));
-      setLevels((prev) => [...prev.slice(1), peak]);
+      setWave(({ levels, pos }) => {
+        if (pos === WAVE_HISTORY) {
+          return { levels: [peak, ...EMPTY_WAVE.levels.slice(1)], pos: 1 };
+        }
+        const next = levels.slice();
+        next[pos] = peak;
+        return { levels: next, pos: pos + 1 };
+      });
     }, WAVE_STEP_MS);
     return () => clearInterval(id);
   }, [isVisible]);
-
-  // Each new bar enters from the right edge while the rest slide one bar left.
-  useLayoutEffect(() => {
-    waveTrackRef.current?.animate(
-      [{ transform: "translateX(0)" }, { transform: "translateX(-4px)" }],
-      { duration: WAVE_STEP_MS, easing: "linear", fill: "forwards" },
-    );
-  }, [levels]);
 
   // The card never takes focus, so mouse events never reach it; the backend
   // sends the pointer (window points) instead.
@@ -357,8 +356,8 @@ const RecordingOverlay: React.FC = () => {
   // ---- Shared building blocks (one visual language for every overlay form) ----
   const waveform = (
     <div className={`swave ${captureReady ? "ready" : "arming"}`}>
-      <div className="swave-track" ref={waveTrackRef}>
-        {levels.map((v, i) => (
+      <div className="swave-track">
+        {wave.levels.map((v, i) => (
           <i
             key={i}
             style={{
@@ -368,7 +367,9 @@ const RecordingOverlay: React.FC = () => {
         ))}
       </div>
       <span
-        className={`scursor ${levels[WAVE_HISTORY - 1] > 0.08 ? "typing" : ""}`}
+        className={`scursor ${wave.levels[wave.pos - 1] > 0.08 ? "typing" : ""}`}
+        // Just right of the newest bar (bars sit every 4px).
+        style={{ left: `${Math.max(0, wave.pos * 4 - 1)}px` }}
       />
     </div>
   );
