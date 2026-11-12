@@ -1,6 +1,6 @@
 # Build Instructions
 
-This guide covers how to set up the development environment and build Handy from source across different platforms.
+This guide covers how to set up the development environment and build Escrevoz from source. Escrevoz is a fork of Handy, so most of the steps match Handy's.
 
 ## Prerequisites
 
@@ -77,8 +77,8 @@ This guide covers how to set up the development environment and build Handy from
 ### 1. Clone the Repository
 
 ```bash
-git clone git@github.com:cjpais/Handy.git
-cd Handy
+git clone https://github.com/LimaJoota/escrevoz.git
+cd escrevoz
 ```
 
 ### 2. Install Dependencies
