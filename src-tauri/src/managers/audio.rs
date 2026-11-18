@@ -257,6 +257,24 @@ pub enum MicrophoneMode {
 struct MuteState {
     did_mute: bool,
     prev_muted: Option<bool>,
+    /// Set when we sent a pause to the now-playing media: whether the output
+    /// went quiet (see `media_pause::pause_playing`). Resumed on stop.
+    paused_media: Option<bool>,
+}
+
+impl MuteState {
+    /// Undoes whatever we did for this recording: restores the system mute
+    /// state and resumes media we paused.
+    fn release(&mut self) {
+        if self.did_mute {
+            restore_mute(self.prev_muted);
+            self.did_mute = false;
+            debug!("Mute removed (restored prev_muted={:?})", self.prev_muted);
+        }
+        if let Some(confirmed) = self.paused_media.take() {
+            crate::media_pause::resume(confirmed);
+        }
+    }
 }
 
 /// The persisted microphone preference currently in effect. Clamshell and
@@ -757,7 +775,8 @@ impl AudioRecordingManager {
 
     /* ---------- microphone life-cycle -------------------------------------- */
 
-    /// Applies mute if mute_while_recording is enabled and stream is open.
+    /// With mute_while_recording on and the stream open, pauses playing media
+    /// and mutes only if the pause didn't silence it.
     /// Snapshots the system's prior mute state first so `remove_mute` can
     /// restore it instead of unconditionally unmuting.
     pub fn apply_mute(&self) {
@@ -772,10 +791,16 @@ impl AudioRecordingManager {
         // Already muted this session — don't re-snapshot, or a duplicate/late
         // apply would overwrite prev_muted with our own forced-muted state and
         // strand audio muted on stop.
-        if mute_guard.did_mute {
+        if mute_guard.did_mute || mute_guard.paused_media.is_some() {
             return;
         }
         if *is_open {
+            // Pausing keeps the user's place in a video; muting would let it
+            // play on unheard. Mute only what a pause didn't silence.
+            mute_guard.paused_media = crate::media_pause::pause_playing();
+            if mute_guard.paused_media == Some(true) {
+                return;
+            }
             mute_guard.prev_muted = get_mute();
             set_mute(true);
             mute_guard.did_mute = true;
@@ -783,18 +808,10 @@ impl AudioRecordingManager {
         }
     }
 
-    /// Removes mute if it was applied, restoring the system's prior mute state
-    /// (a system already muted before recording stays muted).
+    /// Restores the system's prior mute state (a system already muted before
+    /// recording stays muted) and resumes media paused for the recording.
     pub fn remove_mute(&self) {
-        let mut mute_guard = self.mute_state.lock().unwrap();
-        if mute_guard.did_mute {
-            restore_mute(mute_guard.prev_muted);
-            mute_guard.did_mute = false;
-            debug!(
-                "Mute removed (restored prev_muted={:?})",
-                mute_guard.prev_muted
-            );
-        }
+        self.mute_state.lock().unwrap().release();
     }
 
     pub fn start_microphone_stream(&self) -> Result<(), anyhow::Error> {
@@ -824,11 +841,7 @@ impl AudioRecordingManager {
             // Torn down inline rather than via stop_microphone_stream(), which
             // takes the `is_open` lock we are already holding.
             {
-                let mut mute_guard = self.mute_state.lock().unwrap();
-                if mute_guard.did_mute {
-                    restore_mute(mute_guard.prev_muted);
-                    mute_guard.did_mute = false;
-                }
+                self.mute_state.lock().unwrap().release();
             }
             let failed = self.recorder.lock().unwrap().take();
             if let Some(microphone) = failed {
@@ -847,11 +860,7 @@ impl AudioRecordingManager {
         // be false here; if it somehow isn't, restore rather than just clearing the
         // flag, which would strand system audio muted.
         {
-            let mut mute_guard = self.mute_state.lock().unwrap();
-            if mute_guard.did_mute {
-                restore_mute(mute_guard.prev_muted);
-                mute_guard.did_mute = false;
-            }
+            self.mute_state.lock().unwrap().release();
         }
 
         // Get the selected device from settings, considering clamshell mode.
@@ -925,11 +934,7 @@ impl AudioRecordingManager {
         }
 
         {
-            let mut mute_guard = self.mute_state.lock().unwrap();
-            if mute_guard.did_mute {
-                restore_mute(mute_guard.prev_muted);
-            }
-            mute_guard.did_mute = false;
+            self.mute_state.lock().unwrap().release();
         }
 
         let microphone = self.recorder.lock().unwrap().take();

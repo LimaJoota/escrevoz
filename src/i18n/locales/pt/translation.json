@@ -846,8 +846,8 @@
         "description": "Habilitar refinamento de texto com IA após a transcrição"
       },
       "muteWhileRecording": {
-        "label": "Silenciar Durante Gravação",
-        "description": "Silenciar áudio do sistema durante a gravação"
+        "label": "Pausar a Mídia Durante a Gravação",
+        "description": "Pausa o que está tocando e retoma quando você para de falar. O som que não dá para pausar fica mudo."
       },
       "appendTrailingSpace": {
         "label": "Adicionar Espaço Final",

@@ -846,8 +846,8 @@
         "description": "Enable AI-powered text refinement after transcription"
       },
       "muteWhileRecording": {
-        "label": "Mute While Recording",
-        "description": "Mute system audio during recording"
+        "label": "Pause Media While Recording",
+        "description": "Pauses what's playing and resumes it when you stop. Sound that can't be paused is muted."
       },
       "appendTrailingSpace": {
         "label": "Append Trailing Space",

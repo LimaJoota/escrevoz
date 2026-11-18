@@ -17,6 +17,7 @@ mod language_detection;
 mod languages;
 mod llm_client;
 mod managers;
+mod media_pause;
 mod memory;
 mod notices;
 mod overlay;
