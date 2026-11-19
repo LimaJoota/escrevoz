@@ -257,9 +257,8 @@ pub enum MicrophoneMode {
 struct MuteState {
     did_mute: bool,
     prev_muted: Option<bool>,
-    /// Set when we sent a pause to the now-playing media: whether the output
-    /// went quiet (see `media_pause::pause_playing`). Resumed on stop.
-    paused_media: Option<bool>,
+    /// We sent pause to the now-playing media; play is sent on stop.
+    paused_media: bool,
 }
 
 impl MuteState {
@@ -271,8 +270,8 @@ impl MuteState {
             self.did_mute = false;
             debug!("Mute removed (restored prev_muted={:?})", self.prev_muted);
         }
-        if let Some(confirmed) = self.paused_media.take() {
-            crate::media_pause::resume(confirmed);
+        if std::mem::take(&mut self.paused_media) {
+            crate::media_pause::resume();
         }
     }
 }
@@ -776,7 +775,7 @@ impl AudioRecordingManager {
     /* ---------- microphone life-cycle -------------------------------------- */
 
     /// With mute_while_recording on and the stream open, pauses playing media
-    /// and mutes only if the pause didn't silence it.
+    /// and mutes system audio.
     /// Snapshots the system's prior mute state first so `remove_mute` can
     /// restore it instead of unconditionally unmuting.
     pub fn apply_mute(&self) {
@@ -791,16 +790,13 @@ impl AudioRecordingManager {
         // Already muted this session — don't re-snapshot, or a duplicate/late
         // apply would overwrite prev_muted with our own forced-muted state and
         // strand audio muted on stop.
-        if mute_guard.did_mute || mute_guard.paused_media.is_some() {
+        if mute_guard.did_mute || mute_guard.paused_media {
             return;
         }
         if *is_open {
-            // Pausing keeps the user's place in a video; muting would let it
-            // play on unheard. Mute only what a pause didn't silence.
+            // Pausing keeps the user's place in a video; the mute still covers
+            // sound a pause can't reach, since the pause can't be confirmed.
             mute_guard.paused_media = crate::media_pause::pause_playing();
-            if mute_guard.paused_media == Some(true) {
-                return;
-            }
             mute_guard.prev_muted = get_mute();
             set_mute(true);
             mute_guard.did_mute = true;

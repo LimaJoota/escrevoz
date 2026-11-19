@@ -4,14 +4,15 @@
 //!
 //! macOS only. `MediaRemote` is private: reading the now-playing state is gated
 //! for unentitled apps, but sending play/pause still reaches the now-playing
-//! app (browsers through Media Session, Music, Spotify, ...). So CoreAudio
-//! answers "is anything else playing?" and confirms the pause took effect.
+//! app (browsers through Media Session, Music, Spotify, ...). CoreAudio only
+//! answers "is anything else playing?": a paused player keeps its output
+//! stream open for 10-20 s (measured with QuickTime and Chromium), so it can't
+//! confirm a pause took effect. The caller still mutes, as a fallback.
 
 #[cfg(target_os = "macos")]
 mod imp {
     use log::debug;
     use std::ffi::c_void;
-    use std::time::{Duration, Instant};
 
     const SYSTEM_OBJECT: u32 = 1;
     const SCOPE_GLOBAL: u32 = u32::from_be_bytes(*b"glob");
@@ -124,34 +125,22 @@ mod imp {
         }
     }
 
-    /// Pauses what is playing. `None`: nothing else was playing, so nothing
-    /// was sent. `Some(true)`: the output went quiet, so the pause took.
-    /// `Some(false)`: sound kept going, from a player that is slow to close its
-    /// stream or from something a pause can't reach (a call, a game).
-    pub fn pause_playing() -> Option<bool> {
-        if others_playing() != Some(true) || !send_command(COMMAND_PAUSE) {
-            return None;
+    /// Sends pause when another app is playing audio, and reports whether it
+    /// did, so the caller knows to press play afterwards.
+    // shortcut: a player paused by the user less than ~15 s before dictation
+    // still looks like it's playing and gets resumed on stop; fixing that needs
+    // the gated now-playing state or a system-audio tap.
+    pub fn pause_playing() -> bool {
+        let paused = others_playing() == Some(true) && send_command(COMMAND_PAUSE);
+        if paused {
+            debug!("Paused the now-playing media for recording");
         }
-        let deadline = Instant::now() + Duration::from_millis(600);
-        while Instant::now() < deadline {
-            std::thread::sleep(Duration::from_millis(50));
-            if others_playing() == Some(false) {
-                debug!("Paused the now-playing media for recording");
-                return Some(true);
-            }
-        }
-        debug!("Sent pause, but audio kept playing");
-        Some(false)
+        paused
     }
 
-    /// Presses play after a confirmed pause. After an unconfirmed one, only if
-    /// the sound has stopped since: pressing play while a call still plays
-    /// could start media the user had paused themselves.
-    pub fn resume(confirmed: bool) {
-        if confirmed || others_playing() == Some(false) {
-            send_command(COMMAND_PLAY);
-            debug!("Resumed the media paused for recording");
-        }
+    pub fn resume() {
+        send_command(COMMAND_PLAY);
+        debug!("Resumed the media paused for recording");
     }
 }
 
@@ -159,12 +148,12 @@ mod imp {
 pub use imp::{pause_playing, resume};
 
 #[cfg(not(target_os = "macos"))]
-pub fn pause_playing() -> Option<bool> {
-    None
+pub fn pause_playing() -> bool {
+    false
 }
 
 #[cfg(not(target_os = "macos"))]
-pub fn resume(_confirmed: bool) {}
+pub fn resume() {}
 
 #[cfg(all(test, target_os = "macos"))]
 mod tests {
@@ -172,5 +161,32 @@ mod tests {
     fn core_audio_reports_who_is_playing() {
         // Only checks the CoreAudio read; sends no play or pause.
         assert!(super::imp::others_playing().is_some());
+    }
+
+    /// Needs QuickTime Player playing a looping file (silent works):
+    /// `cargo test --lib media_pause -- --ignored`
+    #[test]
+    #[ignore]
+    fn pauses_and_resumes_quicktime() {
+        use std::{process::Command, thread::sleep, time::Duration};
+        let playing = || {
+            let out = Command::new("osascript")
+                .args([
+                    "-e",
+                    "tell application \"QuickTime Player\" to get playing of document 1",
+                ])
+                .output()
+                .unwrap();
+            String::from_utf8_lossy(&out.stdout).trim() == "true"
+        };
+        for _ in 0..3 {
+            assert!(super::pause_playing(), "nothing was playing");
+            sleep(Duration::from_secs(2));
+            assert!(!playing(), "pause failed");
+            super::resume();
+            sleep(Duration::from_secs(1));
+            assert!(playing(), "resume failed");
+            sleep(Duration::from_secs(1));
+        }
     }
 }
