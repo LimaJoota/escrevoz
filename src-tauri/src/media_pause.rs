@@ -163,22 +163,22 @@ mod tests {
         assert!(super::imp::others_playing().is_some());
     }
 
-    /// Needs QuickTime Player playing a looping file (silent works):
-    /// `cargo test --lib media_pause -- --ignored`
+    /// Needs a player already playing (a silent file works). `PLAYING_CHECK`
+    /// is a shell command that prints `true` while it plays; it defaults to
+    /// QuickTime Player. `cargo test --lib media_pause -- --ignored`
     #[test]
     #[ignore]
-    fn pauses_and_resumes_quicktime() {
+    fn pauses_and_resumes_a_real_player() {
         use std::{process::Command, thread::sleep, time::Duration};
+        let check = std::env::var("PLAYING_CHECK").unwrap_or_else(|_| {
+            "osascript -e 'tell application \"QuickTime Player\" to get playing of document 1'"
+                .into()
+        });
         let playing = || {
-            let out = Command::new("osascript")
-                .args([
-                    "-e",
-                    "tell application \"QuickTime Player\" to get playing of document 1",
-                ])
-                .output()
-                .unwrap();
+            let out = Command::new("sh").args(["-c", &check]).output().unwrap();
             String::from_utf8_lossy(&out.stdout).trim() == "true"
         };
+        assert!(playing(), "the player isn't playing");
         for _ in 0..3 {
             assert!(super::pause_playing(), "nothing was playing");
             sleep(Duration::from_secs(2));
