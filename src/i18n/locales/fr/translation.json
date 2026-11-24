@@ -275,6 +275,8 @@
     },
     "speed": "Vitesse",
     "size": "Taille",
+    "speedShort": "Vit.",
+    "sizeShort": "Taille",
     "accuracy": "Précision",
     "search": "Rechercher des modèles",
     "allLabel": "Modèles vocaux",

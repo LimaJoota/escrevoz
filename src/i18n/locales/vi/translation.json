@@ -275,6 +275,8 @@
     },
     "speed": "Tốc độ",
     "size": "Dung lượng",
+    "speedShort": "Tốc",
+    "sizeShort": "Dung l.",
     "accuracy": "Độ chính xác",
     "search": "Tìm kiếm mô hình",
     "allLabel": "Các mô hình giọng nói",

@@ -275,6 +275,8 @@
     },
     "speed": "Snelheid",
     "size": "Grootte",
+    "speedShort": "Snel.",
+    "sizeShort": "Groot.",
     "accuracy": "Nauwkeurigheid",
     "search": "Modellen zoeken",
     "allLabel": "Spraakmodellen",

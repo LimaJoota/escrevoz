@@ -275,6 +275,8 @@
     },
     "speed": "Szybkość",
     "size": "Rozmiar",
+    "speedShort": "Szyb.",
+    "sizeShort": "Rozm.",
     "accuracy": "Dokładność",
     "search": "Szukaj modeli",
     "allLabel": "Modele mowy",

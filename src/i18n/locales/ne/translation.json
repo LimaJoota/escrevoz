@@ -275,6 +275,8 @@
     },
     "speed": "गति",
     "size": "आकार",
+    "speedShort": "गति",
+    "sizeShort": "आकार",
     "accuracy": "शुद्धता",
     "search": "मोडेलहरू खोज्नुहोस्",
     "allLabel": "स्पिच मोडेलहरू",

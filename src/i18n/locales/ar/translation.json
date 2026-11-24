@@ -275,6 +275,8 @@
     },
     "speed": "السرعة",
     "size": "الحجم",
+    "speedShort": "السرعة",
+    "sizeShort": "الحجم",
     "accuracy": "الدقة",
     "search": "البحث عن النماذج",
     "allLabel": "نماذج الكلام",

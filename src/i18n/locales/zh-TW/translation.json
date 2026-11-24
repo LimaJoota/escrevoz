@@ -275,6 +275,8 @@
     },
     "speed": "速度",
     "size": "大小",
+    "speedShort": "速度",
+    "sizeShort": "大小",
     "accuracy": "準確度",
     "search": "搜尋模型",
     "allLabel": "語音模型",

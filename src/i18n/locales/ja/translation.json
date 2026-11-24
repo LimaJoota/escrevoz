@@ -275,6 +275,8 @@
     },
     "speed": "速度",
     "size": "サイズ",
+    "speedShort": "速度",
+    "sizeShort": "サイズ",
     "accuracy": "精度",
     "search": "モデルを検索",
     "allLabel": "音声モデル一覧",

@@ -275,6 +275,8 @@
     },
     "speed": "Kecepatan",
     "size": "Ukuran",
+    "speedShort": "Kec.",
+    "sizeShort": "Ukuran",
     "accuracy": "Akurasi",
     "search": "Cari model",
     "allLabel": "Model ucapan",

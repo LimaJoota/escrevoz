@@ -275,6 +275,8 @@
     },
     "speed": "Hastighed",
     "size": "Størrelse",
+    "speedShort": "Hast.",
+    "sizeShort": "Størr.",
     "accuracy": "Nøjagtighed",
     "search": "Søg efter modeller",
     "allLabel": "Talemodeller",

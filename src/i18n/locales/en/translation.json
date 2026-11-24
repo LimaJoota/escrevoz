@@ -275,6 +275,8 @@
     },
     "speed": "Speed",
     "size": "Size",
+    "speedShort": "Speed",
+    "sizeShort": "Size",
     "accuracy": "Accuracy",
     "search": "Search models",
     "allLabel": "Speech models",

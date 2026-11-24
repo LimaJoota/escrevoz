@@ -275,6 +275,8 @@
     },
     "speed": "Hız",
     "size": "Boyut",
+    "speedShort": "Hız",
+    "sizeShort": "Boyut",
     "accuracy": "Doğruluk",
     "search": "Model ara",
     "allLabel": "Konuşma modelleri",

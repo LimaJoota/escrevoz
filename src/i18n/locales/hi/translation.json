@@ -275,6 +275,8 @@
     },
     "speed": "गति",
     "size": "आकार",
+    "speedShort": "गति",
+    "sizeShort": "आकार",
     "accuracy": "सटीकता",
     "search": "मॉडल खोजें",
     "allLabel": "स्पीच मॉडल",

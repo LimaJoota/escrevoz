@@ -275,6 +275,8 @@
     },
     "speed": "Velocitat",
     "size": "Mida",
+    "speedShort": "Vel.",
+    "sizeShort": "Mida",
     "accuracy": "Precisió",
     "search": "Cerca models",
     "allLabel": "Models de veu",

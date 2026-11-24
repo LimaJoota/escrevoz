@@ -275,6 +275,8 @@
     },
     "speed": "Velocità",
     "size": "Dimensione",
+    "speedShort": "Vel.",
+    "sizeShort": "Dim.",
     "accuracy": "Accuratezza",
     "search": "Cerca modelli",
     "allLabel": "Modelli vocali",

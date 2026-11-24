@@ -275,6 +275,8 @@
     },
     "speed": "Geschwindigkeit",
     "size": "Größe",
+    "speedShort": "Ges.",
+    "sizeShort": "Größe",
     "accuracy": "Genauigkeit",
     "search": "Modelle suchen",
     "allLabel": "Sprachmodelle",

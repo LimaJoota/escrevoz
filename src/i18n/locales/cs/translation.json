@@ -275,6 +275,8 @@
     },
     "speed": "Rychlost",
     "size": "Velikost",
+    "speedShort": "Rych.",
+    "sizeShort": "Velik.",
     "accuracy": "Přesnost",
     "search": "Hledat modely",
     "allLabel": "Modely řeči",

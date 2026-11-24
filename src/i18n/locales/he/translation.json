@@ -275,6 +275,8 @@
     },
     "speed": "מהירות",
     "size": "גודל",
+    "speedShort": "מהירות",
+    "sizeShort": "גודל",
     "accuracy": "דיוק",
     "search": "חיפוש מודלים",
     "allLabel": "מודלי דיבור",

@@ -275,6 +275,8 @@
     },
     "speed": "속도",
     "size": "크기",
+    "speedShort": "속도",
+    "sizeShort": "크기",
     "accuracy": "정확도",
     "search": "모델 검색",
     "allLabel": "음성 모델 목록",

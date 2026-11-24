@@ -38,6 +38,8 @@ export const rowGrid = (actions: boolean) =>
 export const CODE_CLASS =
   "text-tag font-semibold leading-[14px] tracking-[0.02em] text-ink-3 uppercase";
 
+const HEAD_CLASS = `${CODE_CLASS} max-w-full truncate`;
+
 /** A part's view-transition name (onboarding's moves), or nothing. */
 export type VtName = (part?: string) => Record<string, string> | undefined;
 
@@ -68,8 +70,13 @@ export const Codes: React.FC<{ langs: string[]; vt?: VtName }> = ({
           {t("modelTable.allLanguages")}
         </span>
       )}
-      <span className={CODE_CLASS}>{t("modelTable.speed")}</span>
-      <span className={CODE_CLASS}>{t("modelTable.size")}</span>
+      {/* Fixed-width columns: clip a long label rather than run into the next. */}
+      <span className={HEAD_CLASS} title={t("modelTable.speed")}>
+        {t("modelTable.speedShort")}
+      </span>
+      <span className={HEAD_CLASS} title={t("modelTable.size")}>
+        {t("modelTable.sizeShort")}
+      </span>
     </span>
   );
 };

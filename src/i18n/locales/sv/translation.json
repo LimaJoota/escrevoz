@@ -275,6 +275,8 @@
     },
     "speed": "Hastighet",
     "size": "Storlek",
+    "speedShort": "Hast.",
+    "sizeShort": "Storl.",
     "accuracy": "Noggrannhet",
     "search": "Sök modeller",
     "allLabel": "Talmodeller",
