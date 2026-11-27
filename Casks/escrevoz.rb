@@ -1,6 +1,6 @@
 cask "escrevoz" do
-  version "0.10.2"
-  sha256 "4b6dc9389ae850406777056e0a97747e771147013a6e118ec9d19e4a7f9af7b9"
+  version "0.10.3"
+  sha256 "3ac445f98c7a59320ac60db0619af2f985a48a4b418e5deda424ee313cf4d362"
 
   url "https://github.com/LimaJoota/escrevoz/releases/download/v#{version}/Escrevoz_#{version}_aarch64.dmg"
   name "Escrevoz"
