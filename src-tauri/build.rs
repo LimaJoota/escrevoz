@@ -25,6 +25,7 @@ fn main() {
     if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("macos") {
         println!("cargo:rustc-link-arg=-Wl,-weak_framework,CoreAudio");
         link_clang_rt_osx();
+        build_now_playing_helper();
     }
 
     // Stage transcribe-cpp's shared runtime libraries (and the dlopen'd ggml
@@ -47,6 +48,24 @@ fn main() {
 /// (`-nodefaultlibs`). ort-sys used to add it for its own static ONNX Runtime;
 /// without ORT, Handy has to. Local builds targeting the host macOS fold the
 /// checks away, which is why only CI hit the undefined symbol.
+/// Compiles the Now Playing reader that media_pause.rs embeds and runs in perl.
+fn build_now_playing_helper() {
+    let src = "src/now_playing.c";
+    println!("cargo:rerun-if-changed={src}");
+    let arch = match std::env::var("CARGO_CFG_TARGET_ARCH").as_deref() {
+        Ok("aarch64") => "arm64",
+        _ => "x86_64",
+    };
+    let out = std::path::Path::new(&std::env::var("OUT_DIR").unwrap()).join("now_playing.dylib");
+    let status = std::process::Command::new("xcrun")
+        .args(["clang", "-dynamiclib", "-O2", "-arch", arch, "-o"])
+        .arg(&out)
+        .arg(src)
+        .status()
+        .expect("xcrun clang");
+    assert!(status.success(), "building {src} failed");
+}
+
 fn link_clang_rt_osx() {
     let output = std::process::Command::new("clang")
         .arg("--print-resource-dir")
